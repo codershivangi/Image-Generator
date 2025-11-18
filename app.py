@@ -1,44 +1,26 @@
 import streamlit as st
-import torch
-from diffusers import StableDiffusionPipeline
+import requests
 
-# ----------------------------------------------------
-# Streamlit UI
-# ----------------------------------------------------
-st.set_page_config(page_title="Text-to-Image Generator", layout="centered")
-st.title("🎨 Text-to-Image Generator")
-st.write("Enter a prompt and generate an AI image using Stable Diffusion v1.5.")
+st.set_page_config(page_title="Text-to-Image Generator")
+st.title("🖼️ Text-to-Image Generator (Streamlit Cloud Friendly)")
 
-# ----------------------------------------------------
-# Load Model (cached to avoid reloading every run)
-# ----------------------------------------------------
-@st.cache_resource
-def load_model():
-    model_id = "runwayml/stable-diffusion-v1-5"
-    pipe = StableDiffusionPipeline.from_pretrained(
-        model_id,
-        torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-    )
-    if torch.cuda.is_available():
-        pipe = pipe.to("cuda")
-    return pipe
+API_URL = "https://api.deepai.org/api/text2img"
+API_KEY = "quickstart-QUdJIGlzIGNvbWluZy4uLi4K"  # free demo key
 
-pipe = load_model()
+prompt = st.text_input("Enter prompt:", "A beautiful mountain landscape")
+generate = st.button("Generate Image")
 
-# ----------------------------------------------------
-# User Input
-# ----------------------------------------------------
-prompt = st.text_input("Enter your prompt:", "A cute baby elephant wearing a hat")
+if generate:
+    with st.spinner("Generating image..."):
+        response = requests.post(
+            API_URL,
+            data={"text": prompt},
+            headers={"api-key": API_KEY}
+        )
 
-generate_btn = st.button("Generate Image")
+        data = response.json()
 
-# ----------------------------------------------------
-# Generate Image
-# ----------------------------------------------------
-if generate_btn:
-    if prompt.strip() == "":
-        st.warning("Please enter a valid prompt!")
-    else:
-        with st.spinner("Generating image..."):
-            image = pipe(prompt).images[0]
-            st.image(image, caption="Generated Image", use_container_width=True)
+        if "output_url" in data:
+            st.image(data["output_url"], caption="Generated Image")
+        else:
+            st.error("Error generating image. Try another prompt.")
