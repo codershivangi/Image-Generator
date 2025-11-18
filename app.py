@@ -5,7 +5,7 @@ from PIL import Image
 import urllib.parse
 
 st.set_page_config(page_title="Free Text-to-Image Generator")
-st.title("🎨 Free Text-to-Image Generator (No API Key Needed)")
+st.title("🎨 Text-to-Image Generator")
 
 prompt = st.text_input("Enter your prompt:", "A fantasy castle on floating islands")
 generate = st.button("Generate Image")
